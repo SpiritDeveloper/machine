@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from ..services.machine_user_service import MachineUserService
 from ..utils.documentation import Documentation
 from ..config.dto.types import RequestMethodEnum
-
+from ..dto import CreateMachineUserInputSchema, CreateMachineUserInput, UpdateMachineUserInputSchema, UpdateMachineUserInput
 machine_user = APIRouter(prefix="/machine-user", tags=["machine-user"])
 
 
@@ -49,7 +49,8 @@ class MachineUserController:
         description="Creates a new machine user",
         responses=create_machine_user_documentation,
     )
-    def create_new_machine_user(create: dict):
+    def create_new_machine_user(create: CreateMachineUserInputSchema):
+        create: CreateMachineUserInputSchema = CreateMachineUserInput.create(create)
         return MachineUserService().create(create)
 
     update_machine_user_documentation = Documentation.create(
@@ -64,7 +65,8 @@ class MachineUserController:
         description="Updates a machine user",
         responses=update_machine_user_documentation,
     )
-    def update_machine_user(id: str, update: dict):
+    def update_machine_user(id: str, update: UpdateMachineUserInputSchema):
+        update: UpdateMachineUserInputSchema = UpdateMachineUserInput.create(update)
         return MachineUserService().update(id, update)
 
     delete_machine_user_documentation = Documentation.create(

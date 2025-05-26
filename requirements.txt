@@ -18,3 +18,5 @@ pymoises
 ruff
 colorama
 pyfiglet
+apscheduler
+pylogix

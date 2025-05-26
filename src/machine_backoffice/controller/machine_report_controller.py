@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from ..services.machine_report_service import MachineReportService
 from ..utils.documentation import Documentation
 from ..config.dto.types import RequestMethodEnum
-
+from ..dto import CreateMachineReportInputSchema, CreateMachineReportInput, UpdateMachineReportInputSchema, UpdateMachineReportInput
 machine_report = APIRouter(prefix="/machine-report", tags=["machine-report"])
 
 class MachineReportController:
@@ -48,7 +48,8 @@ class MachineReportController:
         description="Creates a new machine report",
         responses=create_machine_report_documentation,
     )
-    def create_new_machine_report(create: dict):
+    def create_new_machine_report(create: CreateMachineReportInputSchema):
+        create: CreateMachineReportInputSchema = CreateMachineReportInput.create(create)
         return MachineReportService().create(create)
 
     update_machine_report_documentation = Documentation.create(
@@ -63,7 +64,8 @@ class MachineReportController:
         description="Updates a user",
         responses=update_machine_report_documentation,
     )
-    def update_machine_report(id: str, update: dict):
+    def update_machine_report(id: str, update: UpdateMachineReportInputSchema):
+        update: UpdateMachineReportInputSchema = UpdateMachineReportInput.create(update)
         return MachineReportService().update(id, update)
 
     delete_machine_report_documentation = Documentation.create(

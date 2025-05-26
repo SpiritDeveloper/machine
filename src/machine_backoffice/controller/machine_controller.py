@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from ..services.machine_service import MachineService
 from ..utils.documentation import Documentation
 from ..config.dto.types import RequestMethodEnum
-
+from ..dto import CreateMachineInputSchema, CreateMachineInput, UpdateMachineInputSchema, UpdateMachineInput
 machine = APIRouter(prefix="/machine", tags=["machine"])
 
 
@@ -49,7 +49,8 @@ class MachineController:
         description="Creates a new country",
         responses=create_machine_documentation,
     )
-    def create_new_machine(create: dict):
+    def create_new_machine(create: CreateMachineInputSchema):
+        create: CreateMachineInputSchema = CreateMachineInput.create(create)
         return MachineService().create(create)
 
     update_machine_documentation = Documentation.create(
@@ -64,7 +65,8 @@ class MachineController:
         description="Updates a machine",
         responses=update_machine_documentation,
     )
-    def update_machine(id: str, update: dict):
+    def update_machine(id: str, update: UpdateMachineInputSchema):
+        update: UpdateMachineInputSchema = UpdateMachineInput.create(update)
         return MachineService().update(id, update)
 
     delete_machine_documentation = Documentation.create(

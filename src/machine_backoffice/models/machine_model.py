@@ -16,7 +16,7 @@ class MachineModel:
         try:
             request["enable"] = True
             result = self.collection.insert_one(request)
-            return str(result.inserted_id)
+            return self.get_by_id(str(result.inserted_id))
         except Exception as err:
             logging.error(f"❌ Error saving machine: {err}")
             return None
@@ -50,10 +50,10 @@ class MachineModel:
             logging.error(f"❌ Error getting machine by request: {request}")
             return None
 
-    def update(self, **request):
+    def update(self, id: str, **request):
         logging.info(f"🔍 Updating machine with data: {request}")
         try:
-            id = ObjectId(id)
+            id = ObjectId(id) if id else None
 
             self.collection.update_one(
                 {"_id": id},

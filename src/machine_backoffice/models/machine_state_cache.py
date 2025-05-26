@@ -4,25 +4,25 @@ from ..dto import ConnectionByIdentifierEnum
 import logging
 
 
-class MachineUserModel:
+class MachineStateCacheModel:
     def __init__(self):
         self.client = database().get_conexion_by_identifier(
             ConnectionByIdentifierEnum.MACHINE_BACKOFFICE
         )
-        self.collection = self.client["machine_user"]
+        self.collection = self.client["machine_state_cache"]
 
     def save(self, **request):
-        logging.info(f"🔍 Saving machine user with data: {request}")
+        logging.info(f"🔍 Saving machine state cache with data: {request}")
         try:
             request["enable"] = True
             result = self.collection.insert_one(request)
             return self.get_by_id(str(result.inserted_id))
         except Exception as err:
-            logging.error(f"❌ Error saving machine user: {err}")
+            logging.error(f"❌ Error saving machine state cache: {err}")
             return None
 
     def get_all(self):
-        logging.info(f"🔍 Getting all machine users")
+        logging.info(f"🔍 Getting all machine state cache")
         try:
             return list(self.collection.find({"enable": True}))
         except Exception as err:
@@ -30,16 +30,16 @@ class MachineUserModel:
             return None
 
     def get_by_id(self, id: str):
-        logging.info(f"🔍 Getting machine user by id: {id}")
+        logging.info(f"🔍 Getting machine state cache by id: {id}")
         try:
             id = ObjectId(id)
             return self.collection.find_one({"_id": id})
         except Exception:
-            logging.error(f"❌ Error getting machine user by id: {id}")
+            logging.error(f"❌ Error getting machine state cache by id: {id}")
             return None
 
     def find_one(self, **request):
-        logging.info(f"🔍 Getting machine user by request: {request}")
+        logging.info(f"🔍 Getting machine state cache by request: {request}")
         try:
             if request.get('id'):
                 request['_id'] = ObjectId(request['id'])
@@ -47,11 +47,11 @@ class MachineUserModel:
 
             return self.collection.find_one(request)
         except Exception:
-            logging.error(f"❌ Error getting machine user by request: {request}")
+            logging.error(f"❌ Error getting machine state cache by request: {request}")
             return None
 
     def update(self, id: str, **request):
-        logging.info(f"🔍 Updating machine user with data: {request}")
+        logging.info(f"🔍 Updating machine state cache with data: {request}")
         try:
             id = ObjectId(id)
 
@@ -66,6 +66,7 @@ class MachineUserModel:
             return None
 
     def delete(self, id: str):
+        logging.info(f"🔍 Deleting machine state cache with id: {id}")
         try:
             id = ObjectId(id)
             return self.collection.update_one(

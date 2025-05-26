@@ -57,7 +57,7 @@ class UserController:
     update_user_documentation = Documentation.create(
         message="Update a user",
         method=RequestMethodEnum.PUT,
-        payload=UpdateUserInputSchema,
+        payload={},
         authorization=True,
     )
 

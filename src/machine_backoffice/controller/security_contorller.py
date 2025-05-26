@@ -18,7 +18,7 @@ class SecurityController:
     @security.post(
         "/login",
         description="Login",
-        responses=login_documentation,
+        responses={},
     )
     def login(login: SecurityLoginInputSchema):
         login: SecurityLoginInputSchema = SecurityLoginInput.create(login)

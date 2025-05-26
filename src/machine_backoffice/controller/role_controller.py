@@ -41,7 +41,7 @@ class RoleController:
     create_role_documentation = Documentation.create(
         message="Create a new role",
         method=RequestMethodEnum.POST,
-        payload=CreateRoleInputSchema,
+        payload={},
         authorization=True,
     )
 

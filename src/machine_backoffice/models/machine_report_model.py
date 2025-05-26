@@ -16,7 +16,7 @@ class MachineReportModel:
         try:
             request["enable"] = True
             result = self.collection.insert_one(request)
-            return str(result.inserted_id)
+            return self.get_by_id(str(result.inserted_id))
         except Exception as err:
             logging.error(f"❌ Error saving machine report: {err}")
             return None

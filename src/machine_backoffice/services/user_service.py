@@ -11,7 +11,7 @@ class UserService:
         self.role_repository = RoleModel()
 
     def get(self, id: str):
-        logging.info("Find psp by id with id: %s", id)
+        logging.info("Find user by id with id: %s", id)
         
         user: UserSchema = self.user_repository.find_one(id=id, enable=True)
 
@@ -195,7 +195,7 @@ class UserService:
         return response
 
     def delete(self, id: str):
-        logging.info("Delete psp with id: %s", id)
+        logging.info("Delete user with id: %s", id)
 
         exist_user: UserSchema = self.user_repository.find_one(id=id, enable=True)
 

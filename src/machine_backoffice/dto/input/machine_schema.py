@@ -11,6 +11,8 @@ class MachineSchema(BaseModel):
     description: str = Field(
         description="machine description", example="this is a machine", required=True
     )
+    status: int = Field(description="machine status", example='ENABLED', default='ENABLED')
+    last_status_change: datetime = Field(description="machine last status change", example=datetime.now(), default=None)
     enable: bool = Field(description="machine enable", example=True, default=True)
     created_at: datetime = Field(description="machine created at", example=datetime.now(), default=datetime.now())
     updated_at: datetime = Field(description="machine updated at", example=datetime.now(), default=datetime.now())
