@@ -21,18 +21,14 @@ class Cron:
         if not ip or not tag:
             logging.error("⚠️  IP o hash no definidos")
             return None
-
+        print(ip)
         try:
             with PLC() as plc:
                 plc.IPAddress = ip
                 response = plc.Read(tag)
-                if response.Status == 'Success':
-                    return int(response.Value)
-                else:
-                    logging.error(f"❌ Error leyendo {tag} de {ip}: {response.Status}")
-                    return 0
+                return int(response.Value)
         except Exception as e:
-            logging.exception(f"🔥 Excepción con PLC en {ip}: {e}")
+            logging.info(f"🔥 Excepción con PLC en {ip}: {e}")
             return 0
 
     def review_status_machine(self):

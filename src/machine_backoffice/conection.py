@@ -10,9 +10,9 @@ load_dotenv()
 
 class database:
     def __init__(self):
-        self.db = "mongodb://{}:{}@{}:{}/{}".format(
-            os.getenv("DB_USER"),
-            os.getenv("DB_PASSWORD"),
+        self.db = "mongodb://{}:{}/{}".format(
+            # os.getenv("DB_USER"),
+            # os.getenv("DB_PASSWORD"),
             os.getenv("DB_HOST"),
             os.getenv("DB_PORT"),
             os.getenv("DB_SCHEMA"),
