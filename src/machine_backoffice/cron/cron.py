@@ -17,7 +17,8 @@ class Cron:
     def get_status_machine_by_hash(self, machine: MachineSchema) -> Optional[int]:
         ip = machine.get('ip')
         tag = machine.get('hash')
-        
+
+
         if not ip or not tag:
             logging.error("⚠️  IP o hash no definidos")
             return None
@@ -29,84 +30,47 @@ class Cron:
                 return int(response.Value)
         except Exception as e:
             logging.info(f"🔥 Excepción con PLC en {ip}: {e}")
-            return 0
+            return 1  # Consideramos '1' como desactivada por seguridad
 
     def review_status_machine(self):
         machines: list[MachineSchema] = self.machine_model.get_all()
         print(f"machines: {machines}")
         now = datetime.now()
 
-
         for machine in machines:
             machine_id = str(machine["_id"])
             status = self.get_status_machine_by_hash(machine)
 
             prev_state = self.machine_state_cache_model.find_one(machine_id=machine_id)
-
             print(f"prev_state: {prev_state}")
 
-            if prev_state is None and status == 1:
+            # En esta lógica, 0 = activada, 1 = desactivada
+
+            # Cuando no hay estado anterior
+            if prev_state is None:
                 machine_state_cache_model: MachineStatusCacheSchema = {
                     "machine_id": machine_id,
                     "status": status,
-                    "start_time": now if status == 1 else None,
-                    "date_failure": now if status == 0 else None
+                    "start_time": now if status == 0 else None,
+                    "date_failure": now if status == 1 else None
                 }
                 self.machine_state_cache_model.save(**machine_state_cache_model)
 
                 update_machine: MachineSchema = {
-                    "status": 'ENABLED',
+                    "status": 'ENABLED' if status == 0 else 'DISABLED',
                     "last_status_change": now
                 }
-
                 self.machine_model.update(machine_id, **update_machine)
                 continue
 
             logging.info(f"prev_state: {prev_state}")
             logging.info(f"status: {status}")
 
-            prev_status = prev_state and prev_state['status'] or 0
+            prev_status = prev_state['status']
 
+            # Si estaba desactivada (1) y ahora está activada (0)
             if prev_status == 1 and status == 0:
-                start_time = prev_state["start_time"]
-                time_active = (now - start_time).total_seconds() if start_time else 0
-
-                self.machine_report_model.save(**{
-                    "machine_id": machine_id,
-                    "user_report_id": machine["hash"],
-                    "date_start": start_time,
-                    "date_end": now,
-                    "time_failure": 0,
-                    "time_start": start_time,
-                    "time_end": now,
-                    "description": f"🔴 Máquina '{machine['name']}' operó {time_active:.2f} segundos antes de apagarse.",
-                    "date_failure": now,
-                    "status": "ENABLED",
-                    "enable": True,
-                    "created_at": now,
-                    "updated_at": now,
-                    "deleted_at": None,
-                })
-
-                machine_state_cache_model: MachineStatusCacheSchema = {
-                    "machine_id": machine_id,
-                    "status": 0,
-                    "start_time": None,
-                    "date_failure": now
-                }
-
-                self.machine_state_cache_model.update(str(prev_state["_id"]), **machine_state_cache_model)
-
-                update_machine: MachineSchema = {
-                    "status": 'DISABLED',
-                    "last_status_change": now
-                }
-
-                self.machine_model.update(machine_id, **update_machine)
-
-
-            elif prev_status == 0 and status == 1:
-                date_failure = prev_state["date_failure"]
+                date_failure = prev_state.get("date_failure")
                 time_down = (now - date_failure).total_seconds() if date_failure else 0
 
                 self.machine_report_model.save(**{
@@ -126,22 +90,51 @@ class Cron:
                     "deleted_at": None,
                 })
 
-                machine_state_cache_model: MachineStatusCacheSchema = {
+                self.machine_state_cache_model.update(str(prev_state["_id"]), **{
                     "machine_id": machine_id,
-                    "status": 1,
+                    "status": 0,
                     "start_time": now,
                     "date_failure": None
-                }
+                })
 
-                self.machine_state_cache_model.update(str(prev_state["_id"]), **machine_state_cache_model)
-
-                update_machine: MachineSchema = {
+                self.machine_model.update(machine_id, **{
                     "status": 'ENABLED',
                     "last_status_change": now
-                }
+                })
 
-                self.machine_model.update(machine_id, **update_machine)
+            # Si estaba activada (0) y ahora está desactivada (1)
+            elif prev_status == 0 and status == 1:
+                start_time = prev_state.get("start_time")
+                time_active = (now - start_time).total_seconds() if start_time else 0
 
+                self.machine_report_model.save(**{
+                    "machine_id": machine_id,
+                    "user_report_id": machine["hash"],
+                    "date_start": start_time,
+                    "date_end": now,
+                    "time_failure": 0,
+                    "time_start": start_time,
+                    "time_end": now,
+                    "description": f"🔴 Máquina '{machine['name']}' operó {time_active:.2f} segundos antes de apagarse.",
+                    "date_failure": now,
+                    "status": "ENABLED",
+                    "enable": True,
+                    "created_at": now,
+                    "updated_at": now,
+                    "deleted_at": None,
+                })
+
+                self.machine_state_cache_model.update(str(prev_state["_id"]), **{
+                    "machine_id": machine_id,
+                    "status": 1,
+                    "start_time": None,
+                    "date_failure": now
+                })
+
+                self.machine_model.update(machine_id, **{
+                    "status": 'DISABLED',
+                    "last_status_change": now
+                })
 
             else:
                 continue
