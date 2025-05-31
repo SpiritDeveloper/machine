@@ -17,11 +17,11 @@ class Cron:
     def get_status_machine_by_hash(self, machine: MachineSchema) -> Optional[int]:
         ip = machine.get('ip')
         tag = machine.get('hash')
-
+        
         if not ip or not tag:
             logging.error("⚠️  IP o hash no definidos")
             return None
-        print(ip)
+
         try:
             with PLC() as plc:
                 plc.IPAddress = ip
@@ -33,7 +33,9 @@ class Cron:
 
     def review_status_machine(self):
         machines: list[MachineSchema] = self.machine_model.get_all()
+        print(f"machines: {machines}")
         now = datetime.now()
+
 
         for machine in machines:
             machine_id = str(machine["_id"])
@@ -96,7 +98,7 @@ class Cron:
                 self.machine_state_cache_model.update(str(prev_state["_id"]), **machine_state_cache_model)
 
                 update_machine: MachineSchema = {
-                    "status": 'ENABLED',
+                    "status": 'DISABLED',
                     "last_status_change": now
                 }
 
@@ -134,7 +136,7 @@ class Cron:
                 self.machine_state_cache_model.update(str(prev_state["_id"]), **machine_state_cache_model)
 
                 update_machine: MachineSchema = {
-                    "status": 'DISABLED',
+                    "status": 'ENABLED',
                     "last_status_change": now
                 }
 
