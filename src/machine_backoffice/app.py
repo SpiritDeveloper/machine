@@ -53,7 +53,7 @@ def app() -> FastAPI:
 
     @app.on_event("startup")
     def start_scheduler():
-        scheduler.add_job(Cron().review_status_machine, CronTrigger(second="*/10"))
+        scheduler.add_job(Cron().review_status_machine, CronTrigger(second="*/1"))
         scheduler.start()
         logging.info("🕒 Scheduler iniciado")
 

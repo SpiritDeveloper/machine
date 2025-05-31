@@ -43,13 +43,6 @@ class Cron:
             machine_id = str(machine["_id"])
             status = self.get_status_machine_by_hash(machine)
 
-            update_machine: MachineSchema = {
-                "status": status == 1 and 'ENABLED' or 'DISABLED',
-                "last_status_change": now
-            }
-
-            self.machine_model.update(machine_id, **update_machine)
-
             prev_state = self.machine_state_cache_model.find_one(machine_id=machine_id)
 
             print(f"prev_state: {prev_state}")
@@ -62,6 +55,13 @@ class Cron:
                     "date_failure": now if status == 0 else None
                 }
                 self.machine_state_cache_model.save(**machine_state_cache_model)
+
+                update_machine: MachineSchema = {
+                    "status": 'ENABLED',
+                    "last_status_change": now
+                }
+
+                self.machine_model.update(machine_id, **update_machine)
                 continue
 
             logging.info(f"prev_state: {prev_state}")
@@ -99,6 +99,14 @@ class Cron:
 
                 self.machine_state_cache_model.update(str(prev_state["_id"]), **machine_state_cache_model)
 
+                update_machine: MachineSchema = {
+                    "status": 'ENABLED',
+                    "last_status_change": now
+                }
+
+                self.machine_model.update(machine_id, **update_machine)
+
+
             elif prev_status == 0 and status == 1:
                 date_failure = prev_state["date_failure"]
                 time_down = (now - date_failure).total_seconds() if date_failure else 0
@@ -128,6 +136,14 @@ class Cron:
                 }
 
                 self.machine_state_cache_model.update(str(prev_state["_id"]), **machine_state_cache_model)
+
+                update_machine: MachineSchema = {
+                    "status": 'DISABLED',
+                    "last_status_change": now
+                }
+
+                self.machine_model.update(machine_id, **update_machine)
+
 
             else:
                 continue
